@@ -1,0 +1,139 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String   @id @default(uuid())
+  email          String   @unique
+  username       String   @unique
+  password       String
+  name           String
+  isVerified     Boolean  @default(false)
+  avatar         String? 
+  role           Role     @default(USER)
+  company        String? 
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  sessions       Session[]
+  otps           Otp[]
+
+  @@index([createdAt]) // Index for faster user sorting
+}
+
+model Supplier {
+  Supplier_ID     Int       @id @default(autoincrement())
+  Name            String
+  Contact_Details String?   // nullable
+  Address         String?   // nullable
+
+  products        Product[]
+  purchaseOrders  Purchase_Order[]
+}
+
+model Product {
+  Product_ID     Int       @id @default(autoincrement())
+  Name           String
+  Description    String?   // nullable
+  Category       String?
+  Price          Decimal   @db.Decimal(10, 2)
+  Stock_Quantity Int       @default(0)
+
+  Supplier_ID    Int?      // optional FK
+  supplier       Supplier? @relation(fields: [Supplier_ID], references: [Supplier_ID], onDelete: SetNull)
+
+  purchaseOrderDetails Purchase_Order_Details[]
+  salesOrderDetails    Sales_Order_Details[]
+  stockTransactions    Stock_Transaction[]
+}
+
+model Purchase_Order {
+  Purchase_Order_ID Int       @id @default(autoincrement())
+  Order_Date        DateTime
+  Total_Amount      Decimal   @db.Decimal(10, 2)
+
+  Supplier_ID       Int
+  supplier          Supplier  @relation(fields: [Supplier_ID], references: [Supplier_ID], onDelete: Cascade)
+
+  details           Purchase_Order_Details[]
+}
+
+model Purchase_Order_Details {
+  Purchase_Order_ID Int
+  Product_ID        Int
+  Quantity          Int
+  Unit_Price        Decimal @db.Decimal(10, 2)
+
+  purchaseOrder     Purchase_Order @relation(fields: [Purchase_Order_ID], references: [Purchase_Order_ID], onDelete: Cascade)
+  product           Product        @relation(fields: [Product_ID], references: [Product_ID], onDelete: Cascade)
+
+  @@id([Purchase_Order_ID, Product_ID])
+}
+
+model Sales_Order {
+  Sales_Order_ID Int       @id @default(autoincrement())
+  Order_Date     DateTime
+  Total_Amount   Decimal   @db.Decimal(10, 2)
+
+  details        Sales_Order_Details[]
+}
+
+model Sales_Order_Details {
+  Sales_Order_ID Int
+  Product_ID     Int
+  Quantity       Int
+  Unit_Price     Decimal @db.Decimal(10, 2)
+
+  salesOrder     Sales_Order @relation(fields: [Sales_Order_ID], references: [Sales_Order_ID], onDelete: Cascade)
+  product        Product     @relation(fields: [Product_ID], references: [Product_ID], onDelete: Cascade)
+
+  @@id([Sales_Order_ID, Product_ID])
+}
+
+model Stock_Transaction {
+  Transaction_ID    Int       @id @default(autoincrement())
+  Product_ID        Int
+  Transaction_Type  TransactionType
+  Quantity          Int
+  Transaction_Date  DateTime  @default(now())
+
+  product           Product   @relation(fields: [Product_ID], references: [Product_ID], onDelete: Cascade)
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId]) // Speeds up user session lookups
+}
+
+model Otp {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  code      String  
+  createdAt DateTime @default(now())
+  expiresAt DateTime 
+  
+  user      User     @relation(fields: [email], references: [email], onDelete: Cascade)
+
+  @@index([createdAt]) // Index for expiring OTPs efficiently
+}
+
+enum TransactionType {
+  IN
+  OUT
+}
+
+enum Role {
+  USER
+  ADMIN
+}
