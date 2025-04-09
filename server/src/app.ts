@@ -56,37 +56,42 @@ app.listen(PORT, ()=>{
 
 
 
-
-
-
 /*
-User Endpoints
-Fetch current user	GET	/users/me	Auth token in headers
-Fetch user submissions	GET	/users/:userId/submissions	userId in path
-Fetch user stats	GET	/users/:userId/stats	userId in path
 
-🔹 Problem Endpoints
-    Fetch list of problems	GET	/problems	Optional query params: difficulty, tags, limit, offset
-Fetch single problem	GET	/problems/:id	id in path
-Fetch sample test cases	GET	/problems/:id/testcases	id in path (returns only sample cases)
+🔹 Supplier
+    GET	/suppliers	Get all suppliers
+    GET	/suppliers/:id	Get a specific supplier
+    POST	/suppliers	Create a new supplier
+    PUT	/suppliers/:id	Update supplier details
+    DELETE	/suppliers/:id	Delete a supplier
+🔹 Product
+    GET	/products	Get all products
+    GET	/products/:id	Get a specific product
+    POST	/products	Create a new product
+    PUT	/products/:id	Update product details
+    DELETE	/products/:id	Delete a product
+    GET	/products/low-stock	Get products below stock threshold
+🔹 Purchase Orders
+    GET	/purchase-orders	List all purchase orders
+    GET	/purchase-orders/:id	Get details of a purchase order
+    POST	/purchase-orders	Create a new purchase order (with items)
+    PUT	/purchase-orders/:id	Update a purchase order (optional)
+    DELETE	/purchase-orders/:id	Cancel/delete a purchase order
+🔹 Sales Orders
+    GET	/sales-orders	List all sales orders
+    GET	/sales-orders/:id	Get details of a sales order
+    POST	/sales-orders	Create a new sales order (with items)
+    PUT	/sales-orders/:id	Update a sales order (optional)
+    DELETE	/sales-orders/:id	Delete/cancel a sales order
+🔹 Stock Transactions
+    GET	/stock-transactions	Get all stock movements
+    GET	/stock-transactions/:id	Get specific stock transaction
+    POST	/stock-transactions	Manually add stock transaction (IN/OUT)
+🔹 Reports / Dashboards (optional but useful)
+    GET	/reports/stock-summary	Show current stock for all products
+    GET	/reports/purchase-summary	Aggregated purchase totals by month
+    GET	/reports/sales-summary	Aggregated sales totals by month
+    GET	/reports/supplier-performance	Total purchases by supplier
 
-🔹 Submission Endpoints
-Fetch submissions	GET	/submissions	Optional query params: problemId, userId, limit, offset
-Fetch single submission	GET	/submissions/:id	id in path
-
-🔹 Admin-Only Problem Endpoints
-    Create a problem	POST	/problems	{ title, statement, difficulty, tags, timeLimit, memoryLimit }
-    Update a problem	PUT	/problems/:id	{ title, statement, difficulty, tags, timeLimit, memoryLimit }
-    Delete a problem	DELETE	/problems/:id	id in path
-
-🔹 Admin-Only Test Case Endpoints
-Add a test case	POST	/problems/:problemId/testcases	{ input, output, isSample }
-Remove a test case	DELETE	/testcases/:id	id in path
-
-🔹 Submission Handling
-Submit a solution	POST	/submissions	{ problemId, userId, languageId, sourceCode }
-
-🔹 Real-Time Updates (Using WebSockets or Polling)
-Live submission status	GET (Polling)	/submissions/:id/status	Can use WebSockets for real-time
 
 */
