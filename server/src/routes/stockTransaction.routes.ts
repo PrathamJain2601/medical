@@ -7,6 +7,7 @@ const prisma = new PrismaClient();
 // Get all stock movements
 router.get("/stock-transactions", async (req: Request, res: Response) => {
     try {
+      const query = `SELECT st.*, p.* FROM stock_transaction st LEFT JOIN product p ON st.product_id = p.product_id ORDER BY st.transaction_date DESC;`;
       const transactions = await prisma.stock_Transaction.findMany({
         orderBy: { Transaction_Date: "desc" },
         include: {
@@ -27,6 +28,7 @@ router.get("/stock-transactions/:id", async (req: Request, res: Response) => {
     const { id } = req.params;
   
     try {
+      const query = `SELECT st.*, p.* FROM stock_transaction st LEFT JOIN product p ON st.product_id = p.product_id WHERE st.transaction_id = <id>;`;
       const transaction = await prisma.stock_Transaction.findUnique({
         where: { Transaction_ID: parseInt(id) },
         include: {
@@ -57,6 +59,7 @@ router.post("/stock-transactions", async (req: Request, res: Response) => {
     }
   
     try {
+      const query = `SELECT * FROM product WHERE product_id = <Product_ID>;`;
       const product = await prisma.product.findUnique({
         where: { Product_ID },
       });
@@ -80,7 +83,8 @@ router.post("/stock-transactions", async (req: Request, res: Response) => {
          res.status(400).json({ success: false, message: "Invalid Transaction_Type (must be IN or OUT)" });
         return;
         }
-  
+        
+        const query2 = `INSERT INTO stock_transaction (product_id, transaction_type, quantity) VALUES (<Product_ID>, '<Transaction_Type>', <Quantity>);`;
       const transaction = await prisma.stock_Transaction.create({
         data: {
           Product_ID,
@@ -89,6 +93,7 @@ router.post("/stock-transactions", async (req: Request, res: Response) => {
         },
       });
   
+      const query3 = `UPDATE product SET stock_quantity = <newQuantity> WHERE product_id = <Product_ID>;`;
       await prisma.product.update({
         where: { Product_ID },
         data: {

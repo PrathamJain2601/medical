@@ -57,6 +57,7 @@ dotenv.config();
             if(!username){
                 username = randomUUID();
             }
+            const query = `INSERT INTO user (email, name, username, password) VALUES ('<email>', '<name>', '<username>', '<hashedPassword>');`;
             const user = await prisma.user.create({
                 data: {
                     email: email,
@@ -69,6 +70,7 @@ dotenv.config();
             const refreshToken = createRefreshToken(user.id);
             const accessToken = createAccessToken(user.id, user.isVerified);
 
+            const query2 = `INSERT INTO session (user_id, token) VALUES (<userId>, '<refreshToken>');`;
             await prisma.session.create({
                 data: {
                     userId: user.id,
@@ -90,6 +92,7 @@ dotenv.config();
             
             const emailData = {to: user.email, code: code, name: user.name, subject: "Email verification otp"};
 
+            const query3 = `DELETE FROM otp WHERE email = '<emailData_to>'; INSERT INTO otp (email, code, expires_at) VALUES ('<emailData_to>', '<emailData_code>', '<expiresAt>');`;
             await prisma.otp.deleteMany({
                                 where: { email: emailData.to },
                             });

@@ -7,7 +7,8 @@ const prisma = new PrismaClient();
 // Get all suppliers
 router.get("/suppliers", async (req: Request, res: Response) => {
     try {
-        const suppliers = await prisma.supplier.findMany({
+      const query = `SELECT s.*, p.*, po.* FROM supplier s LEFT JOIN product p ON p.supplier_id = s.id LEFT JOIN purchase_order po ON po.supplier_id = s.id;`;
+      const suppliers = await prisma.supplier.findMany({
           include: {
             products: true,
             purchaseOrders: true,
@@ -24,8 +25,8 @@ router.get("/suppliers", async (req: Request, res: Response) => {
 // Get a specific supplier
 router.get("/suppliers/:id", async(req: Request, res: Response) => {
     const { id } = req.params;
-
     try {
+      const query = `SELECT s.*, p.*, po.* FROM supplier s LEFT JOIN product p ON p.supplier_id = s.supplier_id LEFT JOIN purchase_order po ON po.supplier_id = s.supplier_id WHERE s.supplier_id = <id>;`;
       const supplier = await prisma.supplier.findUnique({
         where: { Supplier_ID: parseInt(id) },
         include: {
@@ -56,6 +57,7 @@ router.post("/suppliers", async (req: Request, res: Response) => {
     }
   
     try {
+      const query = `INSERT INTO supplier (name, contact_details, address) VALUES ('${Name}', '${Contact_Details}', '${Address}');`;
       const newSupplier = await prisma.supplier.create({
         data: {
           Name,
@@ -78,6 +80,7 @@ router.put("/suppliers/:id", async (req: Request, res: Response) => {
     const { Name, Contact_Details, Address } = req.body;
   
     try {
+      const query = `SELECT * FROM supplier WHERE supplier_id = ${id};`
       const existingSupplier = await prisma.supplier.findUnique({
         where: { Supplier_ID: parseInt(id) },
       });
@@ -86,7 +89,8 @@ router.put("/suppliers/:id", async (req: Request, res: Response) => {
         res.status(404).json({ success: false, message: "Supplier not found" });
         return;
     }
-  
+      const query2 = `UPDATE supplier SET name = COALESCE('Name', name), contact_details = COALESCE('Contact_Details', contact_details), address = COALESCE('Address', address) WHERE supplier_id = <id>;`;
+      
       const updatedSupplier = await prisma.supplier.update({
         where: { Supplier_ID: parseInt(id) },
         data: {
@@ -109,6 +113,7 @@ router.delete("/suppliers/:id", async (req: Request, res: Response) => {
     const { id } = req.params;
   
     try {
+      const query = `SELECT * FROM supplier WHERE supplier_id = <id>;`;
       const existingSupplier = await prisma.supplier.findUnique({
         where: { Supplier_ID: parseInt(id) },
       });
@@ -117,7 +122,8 @@ router.delete("/suppliers/:id", async (req: Request, res: Response) => {
         res.status(404).json({ success: false, message: "Supplier not found" });
         return;
     }
-  
+
+      const query2 = `DELETE FROM supplier WHERE supplier_id = <id>;`;
       await prisma.supplier.delete({
         where: { Supplier_ID: parseInt(id) },
       });

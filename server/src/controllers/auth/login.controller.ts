@@ -48,6 +48,7 @@ export const login: RequestHandler = async (req: Request, res: Response, next: N
         return responseCodes.clientError.notFound(res, "All fields are required");
     }
     try {
+        const query = `SELECT * FROM user WHERE email = '<emailOrUsername>' OR username = '<emailOrUsername>' LIMIT 1;`;
         const user = await prisma.user.findFirst({
             where: {
                 OR: [
@@ -72,7 +73,8 @@ export const login: RequestHandler = async (req: Request, res: Response, next: N
         const accessToken = createAccessToken(user.id, user.isVerified);
         if(await checkToken(refreshToken, user.id)){
             const newRefreshToken = createRefreshToken(user.id);
-    
+            
+            const query = `INSERT INTO session (user_id, token) VALUES (<userId>, '<newRefreshToken>');`;
             await prisma.session.create({
                 data: {
                     userId: user.id,

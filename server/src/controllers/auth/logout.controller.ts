@@ -10,6 +10,7 @@ export const logout = async (req: Request, res: Response) => {
             return responseCodes.clientError.unauthorized(res, "no refresh token found");
         }
 
+        const query = `DELETE FROM session WHERE token = '<refreshToken>';`;
         await prisma.session.deleteMany({
             where: {
                 token: refreshToken

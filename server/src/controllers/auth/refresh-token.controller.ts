@@ -16,6 +16,7 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
             return responseCodes.clientError.unauthorized(res, "Invalid refresh token");
         }
 
+        const query = `SELECT * FROM user WHERE id = <decoded_sub>;`;
         const user = await prisma.user.findUnique({
             where: { id: decoded.sub },
         });

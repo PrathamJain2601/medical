@@ -7,6 +7,7 @@ const prisma = new PrismaClient();
 // Get all products
 router.get("/products", async (req: Request, res: Response) => {
     try {
+      const query = `SELECT p.*, s.*, pod.*, sod.*, st.* FROM product p LEFT JOIN supplier s ON p.supplier_id = s.supplier_id LEFT JOIN purchase_order_details pod ON pod.product_id = p.product_id LEFT JOIN sales_order_details sod ON sod.product_id = p.product_id LEFT JOIN stock_transaction st ON st.product_id = p.product_id;`;
       const products = await prisma.product.findMany({
         include: {
           supplier: true,
@@ -29,6 +30,7 @@ router.get("/products/:id", async (req: Request, res: Response) => {
     const { id } = req.params;
   
     try {
+      const query = `SELECT p.*, s.*, pod.*, sod.*, st.* FROM product p LEFT JOIN supplier s ON p.supplier_id = s.supplier_id LEFT JOIN purchase_order_details pod ON pod.product_id = p.product_id LEFT JOIN sales_order_details sod ON sod.product_id = p.product_id LEFT JOIN stock_transaction st ON st.product_id = p.product_id WHERE p.product_id = <id>;`;
       const product = await prisma.product.findUnique({
         where: { Product_ID: parseInt(id) },
         include: {
@@ -63,6 +65,7 @@ router.post("/products", async (req: Request, res: Response) => {
         return;}
   
     try {
+      const query = `INSERT INTO product (name, description, category, price, stock_quantity, supplier_id) VALUES ('Name', 'Description', 'Category', Price, COALESCE(Stock_Quantity, 0), Supplier_ID);`;
       const newProduct = await prisma.product.create({
         data: {
           Name,
@@ -88,15 +91,15 @@ router.put("/products/:id", async (req: Request, res: Response) => {
     const { Name, Description, Category, Price, Stock_Quantity, Supplier_ID } = req.body;
   
     try {
+      const query = `SELECT * FROM product WHERE product_id = <id>;`;
       const existingProduct = await prisma.product.findUnique({
         where: { Product_ID: parseInt(id) },
       });
-  
       if (!existingProduct) {
         res.status(404).json({ success: false, message: "Product not found" });
         return;
     }
-  
+      const query2 = `UPDATE product SET name = COALESCE('Name', name), description = COALESCE('Description', description), category = COALESCE('Category', category), price = COALESCE(Price, price), stock_quantity = COALESCE(Stock_Quantity, stock_quantity), supplier_id = COALESCE(Supplier_ID, supplier_id) WHERE product_id = <id>;`;
       const updatedProduct = await prisma.product.update({
         where: { Product_ID: parseInt(id) },
         data: {
@@ -122,6 +125,7 @@ router.delete("/products/:id", async (req: Request, res: Response) => {
     const { id } = req.params;
   
     try {
+      const query = `SELECT * FROM product WHERE product_id = <id>;`;
       const existingProduct = await prisma.product.findUnique({
         where: { Product_ID: parseInt(id) },
       });
@@ -130,7 +134,7 @@ router.delete("/products/:id", async (req: Request, res: Response) => {
         res.status(404).json({ success: false, message: "Product not found" });
         return;
     }
-  
+      const query2 = `DELETE FROM product WHERE product_id = <id>;`;
       await prisma.product.delete({
         where: { Product_ID: parseInt(id) },
       });
@@ -148,6 +152,7 @@ router.get("/products/low-stock", async (req: Request, res: Response) => {
     const threshold = parseInt(req.query.threshold as string) || 10;
   
     try {
+      const query =  `SELECT p.*, s.* FROM product p LEFT JOIN supplier s ON p.supplier_id = s.supplier_id WHERE p.stock_quantity < <threshold>;`;
       const lowStockProducts = await prisma.product.findMany({
         where: {
           Stock_Quantity: {
